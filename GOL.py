@@ -1,21 +1,23 @@
 from turtle import *
 from time import sleep
 
+# Schowanie żółwia, przyspieszenie rysowania i włączenie potrzeby update'owania
 ht(); tracer(0); speed(0); delay(0)
 
+# Rysowanie pojedynczej komórki
+# dim = [x, y] - szerokość (x) i wysokość (y) komórki
+# state = boolean - czy wypełnić komórkę czarnym kolorem
 def cell(dim = [10,10], state = False):
     if state==True: fillcolor("black"); begin_fill()
     for i in range(2): fd(dim[0]); lt(90); fd(dim[1]); lt(90)
     if state==True: end_fill()
 
-def cell_positions(dimensions = [200,200], cell_dim = [10,10], live_cells = []):
-    cell_pos = []
-    x_amo = dimensions[0]/cell_dim[0]
-    y_amo = dimensions[1]/cell_dim[1]
-    for c in live_cells:
-        place = [0,0]
-
-#Draws a grid with alive cells (black squares)
+# Rysowanie żywych (czarnych) komórek i opcjonalnie siatki
+# dimensions = [x, y] - szerokość (x) i wysokość (y) całego obszaru gry
+# cell_dim = [x, y] - szerokość (x) i wysokość (y) pojedynczych komórek
+# live_cells = list - lista miejsc w formacie [[x1, y1], [x2, y2], [x3, y3], ...] gdzie
+#                     wskazywane są miejsca "żywych" komórek (czarnych pikseli)
+# grid = boolean - określenie czy rysować siatkę, czy nie
 def magic_area(dimensions = [200,200], cell_dim = [10,10], live_cells = [], grid = True):
     reset()
     
@@ -37,11 +39,20 @@ def magic_area(dimensions = [200,200], cell_dim = [10,10], live_cells = [], grid
         
         pu(); goto(dimensions[0]/-2, dimensions[1]/-2); pd()
 
-    posit = pos()
-    for c in live_cells:
-        pu(); goto(posit[0] + c[0] * cell_dim[0], posit[1] + c[1] * cell_dim[1]); pd()
-        cell(cell_dim, True)
+    if live_cells!=None:
+        posit = pos()
+        for c in live_cells:
+            pu(); goto(posit[0] + c[0] * cell_dim[0], posit[1] + c[1] * cell_dim[1]); pd()
+            cell(cell_dim, True)
 
+# Określenie nowego ustawienia "żywych" komórek na podstawie aktualnego ustawienia tych komórek
+# dimensions = [x, y] - szerokość (x) i wysokość (y) całego obszaru gry
+# cell_dim = [x, y] - szerokość (x) i wysokość (y) pojedynczych komórek
+# live_cells = list - lista miejsc w formacie [[x1, y1], [x2, y2], [x3, y3], ...] gdzie
+#                     wskazywane są miejsca "żywych" komórek (czarnych pikseli)
+# rules = {"alive" : [], "dead" : []} - słownik z listami ilości żywych komórek wokół danej
+#                                       komórki (żywej bądź martwej), dla których ma powstać
+#                                       na jej miejscu nowa żywa komórka
 def gof(dimensions = [200,200], cell_dim = [10,10], live_cells = [], 
             rules = {"alive" : [2,3], "dead" : [3]}):
     
@@ -97,10 +108,32 @@ def gof(dimensions = [200,200], cell_dim = [10,10], live_cells = [],
 
     return [live_cells, dead_cells, new_cells]
 
+def return_clicked_cell(x, y, dimensions = [200,200], cell_dim = [10,10]):
+    x_amo = dimensions[0]/cell_dim[0]
+    y_amo = dimensions[1]/cell_dim[1]
 
-#main loop
-i = 0
-r = [0, 10]
+    cell_place = [[0, 0]]
+
+    for col, i in zip(range(int(x_amo)), range(int(dimensions[0]/-2) + cell_dim[0], int(dimensions[0]/2) + cell_dim[0] + 1, cell_dim[0])):
+        print("!c",col, i)
+        if x < col:
+            print("?")
+            cell_place[0][0] = i
+            break
+    for lin, i in zip(range(int(y_amo)), range(int(dimensions[1]/-2) + cell_dim[1], int(dimensions[1]/2) + cell_dim[1] + 1, cell_dim[1])):
+        print("!l",lin,i)
+        if y < lin:
+            print("??")
+            cell_place[0][1] = i
+            break
+    
+    print(cell_place, x, y)
+    magic_area(dimensions = dimensions, cell_dim = cell_dim, live_cells = cell_place, grid = True)
+
+
+
+'''
+r = [0, 70]
 live_cells = [
     [r[0]+12, r[1]], [r[0]+13, r[1]], 
     [r[0]+11, r[1]+1], [r[0]+15, r[1]+1],
@@ -112,22 +145,39 @@ live_cells = [
     [r[0]+22, r[1]+7], [r[0]+24, r[1]+7],
     [r[0]+24, r[1]+8]
 ]
-dim = [400,400]
-c_dim = [10,10]
+'''
+dim = [100,100]
+c_dim = [20,20]
+canvas = getcanvas()
+live = []
+'''
+def motion(event):
+    x, y = event.x, event.y
+    print('{}, {}'.format(x, y))
+'''
+def click(x,y):
+    return_clicked_cell(x, y, dimensions=dim, cell_dim=c_dim)
 
-#turtle.mainloop()
+canvas = getcanvas()
+onscreenclick (click)
 
+'''
 while True:
-    #sleep(0.5)
-    magic_area(dimensions = dim, cell_dim = c_dim, live_cells = live_cells, grid = False)
+    #canvas = getcanvas()
+    #x, y = canvas.winfo_pointerxy()
+    #live = [return_clicked_cell(x,y)]
+    magic_area(dimensions = dim, cell_dim = c_dim, live_cells = live, grid = True)
+    print(live)
+'''
+
+mainloop()
+
+'''
+# main loop
+while True:
+    magic_area(dimensions = dim, cell_dim = c_dim, live_cells = live_cells, grid = True)
     update()
+    sleep(0.05)
     info = gof(dimensions = dim, cell_dim = c_dim, live_cells = live_cells)
-    #sleep(0.05)
     live_cells = info[2]
-    print("Iteration number: " + str(i))
-    #exitonclick()
-    i += 1
-
-#mainloop()
-
-#NAPRAWIĆ BŁAD PRZY GRANICACH
+'''
