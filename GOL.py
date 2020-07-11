@@ -117,12 +117,12 @@ def return_clicked_cell(x, y, dimensions = [200,200], cell_dim = [10,10]):
     x_val = list(range(int((dimensions[0]/cell_dim[0])+1)))
     x_val = [dimensions[0]/-2 + i * cell_dim[0] for i in x_val]
     for i in range(len(x_val)-1):
-        if x > x_val[i] and x < x_val[i+1]: x_pos = i; break
+        if x >= x_val[i] and x <= x_val[i+1]: x_pos = i; break
     
     y_val = list(range(int((dimensions[1]/cell_dim[1])+1)))
     y_val = [dimensions[1]/-2 + i * cell_dim[1] for i in y_val]
     for i in range(len(y_val)-1):
-        if y > y_val[i] and y < y_val[i+1]: y_pos = i; break
+        if y >= y_val[i] and y <= y_val[i+1]: y_pos = i; break
     
     return [x_pos, y_pos]
 
@@ -165,20 +165,23 @@ live_cells = [
     [r[0]+24, r[1]+8]
 ]
 '''
-dim = [100,100]
+dim = [200,100]
 c_dim = [20,20]
 canvas = getcanvas()
 live = []
+live_cells = []
 '''
 def motion(event):
     x, y = event.x, event.y
     print('{}, {}'.format(x, y))
 '''
 def click(x,y):
-    place = [return_clicked_cell(x, y, dimensions=dim, cell_dim=c_dim)]
-    if place != None: magic_area(dimensions = dim, cell_dim = c_dim, live_cells = place, grid = True)
+    clicked = return_clicked_cell(x, y, dimensions=dim, cell_dim=c_dim)
+    if clicked in live_cells: live_cells.remove(clicked)
+    elif type(clicked) == list: live_cells.append(clicked)
+    magic_area(dimensions = dim, cell_dim = c_dim, live_cells = live_cells, grid = True)
 
-magic_area(dimensions = dim, cell_dim = c_dim, grid = True)
+magic_area(dimensions = dim, cell_dim = c_dim, live_cells = live_cells, grid = True)
 onscreenclick(click)
 
 '''
