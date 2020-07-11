@@ -109,26 +109,45 @@ def gof(dimensions = [200,200], cell_dim = [10,10], live_cells = [],
     return [live_cells, dead_cells, new_cells]
 
 def return_clicked_cell(x, y, dimensions = [200,200], cell_dim = [10,10]):
+    if x > dimensions[0]/2 or x < dimensions[0]/-2 or y > dimensions[1]/2 or y < dimensions[1]/-2: return None
+
+    x_pos = 0
+    y_pos = 0
+
+    x_val = list(range(int((dimensions[0]/cell_dim[0])+1)))
+    x_val = [dimensions[0]/-2 + i * cell_dim[0] for i in x_val]
+    for i in range(len(x_val)-1):
+        if x > x_val[i] and x < x_val[i+1]: x_pos = i; break
+    
+    y_val = list(range(int((dimensions[1]/cell_dim[1])+1)))
+    y_val = [dimensions[1]/-2 + i * cell_dim[1] for i in y_val]
+    for i in range(len(y_val)-1):
+        if y > y_val[i] and y < y_val[i+1]: y_pos = i; break
+    
+    return [x_pos, y_pos]
+
+    '''
     x_amo = dimensions[0]/cell_dim[0]
     y_amo = dimensions[1]/cell_dim[1]
 
     cell_place = [[0, 0]]
 
     for col, i in zip(range(int(x_amo)), range(int(dimensions[0]/-2) + cell_dim[0], int(dimensions[0]/2) + cell_dim[0] + 1, cell_dim[0])):
-        print("!c",col, i)
+        #print("!c",col, i)
         if x < col:
-            print("?")
+            #print("?")
             cell_place[0][0] = i
             break
     for lin, i in zip(range(int(y_amo)), range(int(dimensions[1]/-2) + cell_dim[1], int(dimensions[1]/2) + cell_dim[1] + 1, cell_dim[1])):
-        print("!l",lin,i)
+        #print("!l",lin,i)
         if y < lin:
-            print("??")
+            #print("??")
             cell_place[0][1] = i
             break
     
-    print(cell_place, x, y)
+    #print(cell_place, x, y)
     magic_area(dimensions = dimensions, cell_dim = cell_dim, live_cells = cell_place, grid = True)
+    '''
 
 
 
@@ -156,10 +175,11 @@ def motion(event):
     print('{}, {}'.format(x, y))
 '''
 def click(x,y):
-    return_clicked_cell(x, y, dimensions=dim, cell_dim=c_dim)
+    place = [return_clicked_cell(x, y, dimensions=dim, cell_dim=c_dim)]
+    if place != None: magic_area(dimensions = dim, cell_dim = c_dim, live_cells = place, grid = True)
 
-canvas = getcanvas()
-onscreenclick (click)
+magic_area(dimensions = dim, cell_dim = c_dim, grid = True)
+onscreenclick(click)
 
 '''
 while True:
